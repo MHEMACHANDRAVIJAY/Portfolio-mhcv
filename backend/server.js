@@ -110,7 +110,29 @@ const saveCertMeta = (meta) => {
     } catch (e) { console.error('[CERT META WRITE ERROR]', e); }
 };
 
-app.use(cors());
+const allowedOrigins = [
+    'https://frontend-delta-five-fjcgcm9ny7.vercel.app',
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5000'
+].filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+            return callback(null, true);
+        }
+        if (/^https:\/\/frontend.*\.vercel\.app$/.test(origin)) {
+            return callback(null, true);
+        }
+        return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Serve uploaded marksheet and certificate files as static assets
@@ -1083,42 +1105,33 @@ app.post(['/send-email', '/api/send-email'], limiter, async (req, res) => {
   </td></tr></table>
 </body></html>`;
 
-        const primaryPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '';
-        const fallbackPasses = [primaryPass, 'xfrdmfudwswbhboc', 'ffgakueatejdasid'].filter(Boolean);
-        const uniquePasses = [...new Set(fallbackPasses)];
+        const emailUser = process.env.EMAIL_USER;
+        const emailPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : null;
 
-        let sent = false;
-        let lastError = null;
-
-        for (const pass of uniquePasses) {
-            try {
-                const transporter = nodemailer.createTransport({
-                    service: 'gmail',
-                    auth: {
-                        user: process.env.EMAIL_USER || 'mhemachandravijay347@gmail.com',
-                        pass: pass,
-                    },
-                });
-
-                await transporter.sendMail({
-                    from: `"MHCV Gateway" <${process.env.EMAIL_USER || 'mhemachandravijay347@gmail.com'}>`,
-                    to, replyTo: email,
-                    subject: `⚡ [UPLINK] Message from ${name}`,
-                    text: `From: ${name} <${email}>\n\n${message}`,
-                    html: htmlContent
-                });
-                sent = true;
-                break;
-            } catch (authErr) {
-                lastError = authErr;
-                console.warn(`[SMTP ATTEMPT] Pass failed: ${authErr.message}`);
-            }
+        if (!emailUser || !emailPass) {
+            return res.status(500).json({ error: 'EMAIL_USER or EMAIL_PASS environment variable not configured on server' });
         }
 
-        if (sent) {
-            return res.status(200).json({ message: 'Success' });
-        }
-        throw lastError;
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: emailUser,
+                pass: emailPass,
+            },
+        });
+
+        await transporter.sendMail({
+            from: `"MHCV Gateway" <${emailUser}>`,
+            to,
+            replyTo: email,
+            subject: `⚡ [UPLINK] Message from ${name}`,
+            text: `From: ${name} <${email}>\n\n${message}`,
+            html: htmlContent
+        });
+
+        return res.status(200).json({ message: 'Success' });
     } catch (e) {
         console.error('[SMTP ERROR]', e);
         if (e.code === 'EAUTH' || (e.response && e.response.includes('535'))) {

@@ -63,40 +63,43 @@ export default async function handler(req, res) {
   </td></tr></table>
 </body></html>`;
 
-    const primaryPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '';
-    const fallbackPasses = [primaryPass, 'xfrdmfudwswbhboc', 'ffgakueatejdasid'].filter(Boolean);
-    const uniquePasses = [...new Set(fallbackPasses)];
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : null;
 
-    let lastError = null;
-    for (const pass of uniquePasses) {
-        try {
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USER || 'mhemachandravijay347@gmail.com',
-                    pass: pass,
-                },
-            });
-
-            await transporter.sendMail({
-                from: `"MHCV Gateway" <${process.env.EMAIL_USER || 'mhemachandravijay347@gmail.com'}>`,
-                to,
-                replyTo: email,
-                subject: `⚡ [UPLINK] Message from ${name}`,
-                text: `From: ${name} <${email}>\n\n${message}`,
-                html: htmlContent
-            });
-
-            return res.status(200).json({ message: 'Success' });
-        } catch (err) {
-            lastError = err;
-            console.warn(`[SMTP ATTEMPT] Pass attempt failed: ${err.message}`);
-        }
+    if (!emailUser || !emailPass) {
+        console.error('[SMTP ERROR] EMAIL_USER or EMAIL_PASS environment variable is missing.');
+        return res.status(500).json({
+            error: 'Email service configuration error',
+            details: 'EMAIL_USER or EMAIL_PASS environment variable is not set.'
+        });
     }
 
-    console.error('[SMTP ERROR]', lastError);
-    return res.status(500).json({
-        error: 'Failed',
-        details: lastError?.message || 'SMTP Authentication failed'
-    });
+    try {
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: emailUser,
+                pass: emailPass,
+            },
+        });
+
+        await transporter.sendMail({
+            from: `"MHCV Gateway" <${emailUser}>`,
+            to,
+            replyTo: email,
+            subject: `⚡ [UPLINK] Message from ${name}`,
+            text: `From: ${name} <${email}>\n\n${message}`,
+            html: htmlContent
+        });
+
+        return res.status(200).json({ message: 'Success' });
+    } catch (err) {
+        console.error('[SMTP ERROR]', err);
+        return res.status(500).json({
+            error: 'Failed to send email',
+            details: err?.message || 'SMTP Authentication failed'
+        });
+    }
 }
