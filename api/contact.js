@@ -1,5 +1,5 @@
-import sendEmailHandler from './send-email.js';
+const sendEmailHandler = require('./send-email.js');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     return sendEmailHandler(req, res);
-}
+};

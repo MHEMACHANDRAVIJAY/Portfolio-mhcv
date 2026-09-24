@@ -1,6 +1,6 @@
-import nodemailer from 'nodemailer';
+const nodemailer = require('nodemailer');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,20 +9,22 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
+    if (req.method === 'GET') {
+        return res.status(200).json({ status: 'MHCV Email Gateway Serverless Function Active' });
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     let body = req.body;
     if (typeof body === 'string') {
-        try {
-            body = JSON.parse(body);
-        } catch (_) {}
+        try { body = JSON.parse(body); } catch (_) {}
     }
 
     const { name, email, to, message } = body || {};
     if (!name || !email || !to || !message) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ error: 'Missing required fields (name, email, to, message)' });
     }
 
     const formattedTimestamp = new Date().toLocaleString('en-US', {
@@ -75,10 +77,7 @@ export default async function handler(req, res) {
             host: 'smtp.gmail.com',
             port: 465,
             secure: true,
-            auth: {
-                user: emailUser,
-                pass: emailPass,
-            },
+            auth: { user: emailUser, pass: emailPass },
         });
 
         await transporter.sendMail({
@@ -95,7 +94,7 @@ export default async function handler(req, res) {
         console.error('[SMTP ERROR]', err);
         return res.status(500).json({
             error: 'Failed to send email',
-            details: err?.message || 'SMTP Authentication failed'
+            details: err && err.message ? err.message : 'SMTP Authentication failed'
         });
     }
-}
+};
