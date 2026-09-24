@@ -9,6 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "axios": "^1.13.5",
     "clsx": "^2.1.0",
@@ -36,5 +39,8 @@
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "vite": "^6.3.5"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.63.5"
   }
 }
