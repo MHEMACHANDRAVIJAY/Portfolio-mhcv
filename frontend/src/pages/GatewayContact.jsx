@@ -205,9 +205,20 @@ const GatewayContact = () => {
         setStatus('loading');
         setErrorMsg('');
         try {
-            const sendEndpoint = BACKEND_URL ? `${BACKEND_URL}/send-email` : '/send-email';
-            const response = await axios.post(sendEndpoint, formData);
-            if (response.status === 200) {
+            const sendEndpoint = BACKEND_URL ? `${BACKEND_URL}/api/send-email` : '/api/send-email';
+            let response;
+            try {
+                response = await axios.post(sendEndpoint, formData);
+            } catch (postErr) {
+                // If 404 or 405, fallback to /send-email route
+                if (postErr.response?.status === 404 || postErr.response?.status === 405) {
+                    const fallbackEndpoint = BACKEND_URL ? `${BACKEND_URL}/send-email` : '/send-email';
+                    response = await axios.post(fallbackEndpoint, formData);
+                } else {
+                    throw postErr;
+                }
+            }
+            if (response && response.status === 200) {
                 setStatus('success');
                 setFormData({ name: '', email: '', to: '', message: '' });
                 setAiData(null); setShowPanel(false);

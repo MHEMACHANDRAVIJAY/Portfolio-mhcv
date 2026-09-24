@@ -1037,7 +1037,7 @@ app.post('/api/analyze-resume', limiter, upload.single('resume'), async (req, re
 });
 
 // ── Email route ──────────────────────────────────────────────────────────────
-app.post('/send-email', limiter, async (req, res) => {
+app.post(['/send-email', '/api/send-email'], limiter, async (req, res) => {
     const { name, email, to, message } = req.body;
     if (!name || !email || !to || !message) return res.status(400).json({ error: 'Missing fields' });
 
