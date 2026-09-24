@@ -227,7 +227,19 @@ const GatewayContact = () => {
         } catch (error) {
             console.error('Failed to send:', error);
             setStatus('error');
-            setErrorMsg(error.response?.data?.details || error.response?.data?.error || 'Transmission failed. PLEASE VERIFY SYSTEM STATUS.');
+            let msg = 'Transmission failed. PLEASE VERIFY SYSTEM STATUS.';
+            if (typeof error.response?.data?.details === 'string') {
+                msg = error.response.data.details;
+            } else if (typeof error.response?.data?.error === 'string') {
+                msg = error.response.data.error;
+            } else if (error.response?.data?.error?.message) {
+                msg = error.response.data.error.message;
+            } else if (error.response?.status === 401) {
+                msg = '401 Unauthorized: Vercel Preview Protection is active. Please use the Production URL or disable Deployment Protection.';
+            } else if (error.message) {
+                msg = error.message;
+            }
+            setErrorMsg(msg);
         }
     };
 
