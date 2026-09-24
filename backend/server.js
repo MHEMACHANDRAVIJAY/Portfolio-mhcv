@@ -1083,23 +1083,42 @@ app.post('/send-email', limiter, async (req, res) => {
   </td></tr></table>
 </body></html>`;
 
-        const sanitizedPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '';
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: sanitizedPass,
-            },
-        });
+        const primaryPass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s+/g, '') : '';
+        const fallbackPasses = [primaryPass, 'xfrdmfudwswbhboc', 'ffgakueatejdasid'].filter(Boolean);
+        const uniquePasses = [...new Set(fallbackPasses)];
 
-        await transporter.sendMail({
-            from: `"MHCV Gateway" <${process.env.EMAIL_USER}>`,
-            to, replyTo: email,
-            subject: `⚡ [UPLINK] Message from ${name}`,
-            text: `From: ${name} <${email}>\n\n${message}`,
-            html: htmlContent
-        });
-        res.status(200).json({ message: 'Success' });
+        let sent = false;
+        let lastError = null;
+
+        for (const pass of uniquePasses) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.EMAIL_USER || 'mhemachandravijay347@gmail.com',
+                        pass: pass,
+                    },
+                });
+
+                await transporter.sendMail({
+                    from: `"MHCV Gateway" <${process.env.EMAIL_USER || 'mhemachandravijay347@gmail.com'}>`,
+                    to, replyTo: email,
+                    subject: `⚡ [UPLINK] Message from ${name}`,
+                    text: `From: ${name} <${email}>\n\n${message}`,
+                    html: htmlContent
+                });
+                sent = true;
+                break;
+            } catch (authErr) {
+                lastError = authErr;
+                console.warn(`[SMTP ATTEMPT] Pass failed: ${authErr.message}`);
+            }
+        }
+
+        if (sent) {
+            return res.status(200).json({ message: 'Success' });
+        }
+        throw lastError;
     } catch (e) {
         console.error('[SMTP ERROR]', e);
         if (e.code === 'EAUTH' || (e.response && e.response.includes('535'))) {

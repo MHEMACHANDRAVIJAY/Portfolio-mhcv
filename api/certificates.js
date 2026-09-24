@@ -1,0 +1,94 @@
+const CERTIFICATES_DATA = {
+    "CERT-01": {
+        "certId": "CERT-01",
+        "filename": "1790258067653_ACCENTURE_DATA_ANALYTICS_CERT.pdf",
+        "originalName": "ACCENTURE_DATA_ANALYTICS_CERT.pdf",
+        "fileName": "ACCENTURE_DATA_ANALYTICS_CERT.pdf",
+        "fileType": "application/pdf",
+        "fileUrl": "/ACCENTURE_DATA_ANALYTICS_CERT.pdf",
+        "uploadDate": "2026-09-24T13:54:27.712Z",
+        "fileSize": 431780,
+        "title": "Data Analytics & Visualization",
+        "issuer": "Accenture"
+    },
+    "CERT-06": {
+        "certId": "CERT-06",
+        "filename": "1790258616365_KSRCT0426ECINCA031.pdf",
+        "originalName": "KSRCT0426ECINCA031.pdf",
+        "fileName": "KSRCT0426ECINCA031.pdf",
+        "fileType": "application/pdf",
+        "fileUrl": "/grades/SEM_04_MARKSHEET.pdf",
+        "uploadDate": "2026-09-24T14:03:36.386Z",
+        "fileSize": 249872,
+        "title": "Certificate of Presentation - International Conference AIMLA 2026",
+        "issuer": "K S Rangasamy College of Technology (with IEEE & East Carolina University, USA)"
+    },
+    "CERT-05": {
+        "certId": "CERT-05",
+        "filename": "1790258638064_TATA_DATA_VISUALIZATION_CERT.pdf",
+        "originalName": "TATA_DATA_VISUALIZATION_CERT.pdf",
+        "fileName": "TATA_DATA_VISUALIZATION_CERT.pdf",
+        "fileType": "application/pdf",
+        "fileUrl": "/TATA_DATA_VISUALIZATION_CERT.pdf",
+        "uploadDate": "2026-09-24T14:03:58.084Z",
+        "fileSize": 167148,
+        "title": "Data Visualisation: Empowering Business with Effective Insights",
+        "issuer": "Forage (Tata Virtual Experience)"
+    },
+    "CERT-04": {
+        "certId": "CERT-04",
+        "filename": "1790258652710_NATIVESPARROW_INTERNSHIP_CERT.pdf",
+        "originalName": "NATIVESPARROW_INTERNSHIP_CERT.pdf",
+        "fileName": "NATIVESPARROW_INTERNSHIP_CERT.pdf",
+        "fileType": "application/pdf",
+        "fileUrl": "/NATIVESPARROW_INTERNSHIP_CERT.pdf",
+        "uploadDate": "2026-09-24T14:04:12.740Z",
+        "fileSize": 607310,
+        "title": "Internship Completion Certificate",
+        "issuer": "Native Sparrow Software Solutions LLP"
+    },
+    "CERT-02": {
+        "certId": "CERT-02",
+        "filename": "1790258670947_AWS_SOLUTIONS_ARCHITECTURE_CERT.pdf",
+        "originalName": "AWS_SOLUTIONS_ARCHITECTURE_CERT.pdf",
+        "fileName": "AWS_SOLUTIONS_ARCHITECTURE_CERT.pdf",
+        "fileType": "application/pdf",
+        "fileUrl": "/AWS_SOLUTIONS_ARCHITECTURE_CERT.pdf",
+        "uploadDate": "2026-09-24T14:04:30.958Z",
+        "fileSize": 396375,
+        "title": "Solutions Architecture",
+        "issuer": "Amazon Web Services"
+    },
+    "CERT-03": {
+        "certId": "CERT-03",
+        "filename": "1790258820034_DOC-20260214-WA0023..pdf",
+        "originalName": "DOC-20260214-WA0023..pdf",
+        "fileName": "DOC-20260214-WA0023..pdf",
+        "fileType": "application/pdf",
+        "fileUrl": "/HEMACHANDRAVIJAY_M_TCS_CERT.pdf",
+        "uploadDate": "2026-09-24T14:07:00.078Z",
+        "fileSize": 1110095,
+        "title": "TCS iON Career Edge - Young Professional",
+        "issuer": "Tata Consultancy Services"
+    }
+};
+
+export default function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    if (req.method === 'GET') {
+        return res.status(200).json(CERTIFICATES_DATA);
+    }
+
+    if (req.method === 'POST') {
+        return res.status(200).json({ message: 'Certificate acknowledged' });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+}
