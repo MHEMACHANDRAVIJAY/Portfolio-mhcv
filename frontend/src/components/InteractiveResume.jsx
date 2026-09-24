@@ -10,7 +10,7 @@ import {
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useSearchParams } from 'react-router-dom';
-import { portfolioKnowledge } from '@backend/portfolio_knowledge';
+import { portfolioKnowledge } from '../data/portfolioKnowledge';
 import {
     enhanceBulletPoints,
     enhanceExecutiveWording,
