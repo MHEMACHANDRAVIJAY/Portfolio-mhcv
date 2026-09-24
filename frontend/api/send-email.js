@@ -25,8 +25,8 @@ export default async function handler(req, res) {
     }
 
     const { name, email, to, message } = body || {};
-    if (!name || !email || !to || !message) {
-        return res.status(400).json({ error: 'Missing required fields (name, email, to, message)' });
+    if (!name || !email || !message) {
+        return res.status(400).json({ error: 'Missing required fields (name, email, message)' });
     }
 
     const formattedTimestamp = new Date().toLocaleString('en-US', {
@@ -85,9 +85,10 @@ export default async function handler(req, res) {
             },
         });
 
+        const recipient = (to && typeof to === 'string' && to.trim()) ? to.trim() : emailUser;
         await transporter.sendMail({
             from: `"MHCV Gateway" <${emailUser}>`,
-            to,
+            to: recipient,
             replyTo: email,
             subject: `⚡ [UPLINK] Message from ${name}`,
             text: `From: ${name} <${email}>\n\n${message}`,

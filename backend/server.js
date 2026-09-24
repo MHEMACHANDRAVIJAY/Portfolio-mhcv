@@ -1061,7 +1061,7 @@ app.post('/api/analyze-resume', limiter, upload.single('resume'), async (req, re
 // ── Email route ──────────────────────────────────────────────────────────────
 app.post(['/send-email', '/api/send-email'], limiter, async (req, res) => {
     const { name, email, to, message } = req.body;
-    if (!name || !email || !to || !message) return res.status(400).json({ error: 'Missing fields' });
+    if (!name || !email || !message) return res.status(400).json({ error: 'Missing fields' });
 
     if (process.env.EMAIL_PASS === 'mock' || !process.env.EMAIL_PASS || process.env.EMAIL_PASS.trim() === '') {
         console.log(`\n--- [MOCK EMAIL SENT] ---`);
@@ -1122,9 +1122,10 @@ app.post(['/send-email', '/api/send-email'], limiter, async (req, res) => {
             },
         });
 
+        const recipient = (to && typeof to === 'string' && to.trim()) ? to.trim() : emailUser;
         await transporter.sendMail({
             from: `"MHCV Gateway" <${emailUser}>`,
-            to,
+            to: recipient,
             replyTo: email,
             subject: `⚡ [UPLINK] Message from ${name}`,
             text: `From: ${name} <${email}>\n\n${message}`,
